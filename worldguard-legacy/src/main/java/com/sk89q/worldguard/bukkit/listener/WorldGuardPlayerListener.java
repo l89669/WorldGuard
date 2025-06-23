@@ -26,6 +26,7 @@ import com.sk89q.worldguard.bukkit.ConfigurationManager;
 import com.sk89q.worldguard.bukkit.WorldConfiguration;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.bukkit.event.player.ProcessPlayerEvent;
+import com.sk89q.worldguard.bukkit.util.BukkitHelper;
 import com.sk89q.worldguard.bukkit.util.Events;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
@@ -334,7 +335,7 @@ public class WorldGuardPlayerListener implements Listener {
             com.sk89q.worldedit.Location spawn = set.getFlag(DefaultFlag.SPAWN_LOC, localPlayer);
 
             if (spawn != null) {
-                event.setRespawnLocation(com.sk89q.worldedit.bukkit.BukkitUtil.toLocation(spawn));
+                event.setRespawnLocation(BukkitHelper.getBukkitLocation(spawn));
             }
         }
     }

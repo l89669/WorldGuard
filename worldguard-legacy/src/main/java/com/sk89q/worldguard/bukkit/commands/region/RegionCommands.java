@@ -26,12 +26,8 @@ import com.sk89q.minecraft.util.commands.CommandContext;
 import com.sk89q.minecraft.util.commands.CommandException;
 import com.sk89q.minecraft.util.commands.CommandPermissionsException;
 import com.sk89q.worldedit.Location;
-import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.bukkit.ConfigurationManager;
-import com.sk89q.worldguard.bukkit.RegionContainer;
-import com.sk89q.worldguard.bukkit.WorldConfiguration;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.bukkit.*;
 import com.sk89q.worldguard.bukkit.commands.AsyncCommandHelper;
 import com.sk89q.worldguard.bukkit.commands.CommandUtils;
 import com.sk89q.worldguard.bukkit.commands.FutureProgressListener;
@@ -42,6 +38,7 @@ import com.sk89q.worldguard.bukkit.commands.task.RegionManagerReloader;
 import com.sk89q.worldguard.bukkit.commands.task.RegionManagerSaver;
 import com.sk89q.worldguard.bukkit.commands.task.RegionRemover;
 import com.sk89q.worldguard.bukkit.permission.RegionPermissionModel;
+import com.sk89q.worldguard.bukkit.util.BukkitHelper;
 import com.sk89q.worldguard.bukkit.util.logging.LoggerToChatHandler;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
@@ -1048,7 +1045,7 @@ public final class RegionCommands extends RegionCommandsBase {
             }
         }
 
-        player.teleport(BukkitUtil.toLocation(teleportLocation));
+        player.teleport(BukkitHelper.getBukkitLocation(teleportLocation));
         sender.sendMessage("Teleported you to the region '" + existing.getId() + "'.");
     }
 }

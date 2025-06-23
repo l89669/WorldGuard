@@ -43,9 +43,6 @@ import com.sk89q.squirrelid.resolver.ProfileService;
 import com.sk89q.wepif.PermissionsResolverManager;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.bukkit.commands.GeneralCommands;
-import com.sk89q.worldguard.bukkit.commands.ProtectionCommands;
-import com.sk89q.worldguard.bukkit.commands.ToggleCommands;
 import com.sk89q.worldguard.bukkit.event.player.ProcessPlayerEvent;
 import com.sk89q.worldguard.bukkit.listener.*;
 import com.sk89q.worldguard.bukkit.util.Events;
@@ -66,6 +63,7 @@ import com.sk89q.worldguard.util.logging.RecordMessagePrefixer;
 import com.sk89q.worldguard.util.task.SimpleSupervisor;
 import com.sk89q.worldguard.util.task.Supervisor;
 import com.sk89q.worldguard.util.task.Task;
+import lombok.val;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -168,18 +166,20 @@ public class WorldGuardPlugin extends JavaPlugin {
         verifier.reportMismatches(ImmutableList.of(WGBukkit.class, ProtectedRegion.class, ProtectedCuboidRegion.class, Flag.class));
 
         // Register command classes
-        final CommandsManagerRegistration reg = new CommandsManagerRegistration(this, commands);
-        reg.register(ToggleCommands.class);
-        reg.register(ProtectionCommands.class);
-
-        getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-            @Override
-            public void run() {
-                if (!getGlobalStateManager().hasCommandBookGodMode()) {
-                    reg.register(GeneralCommands.class);
-                }
-            }
-        }, 0L);
+        val graph = WorldEdit.getInstance().getPlatformManager().getCommandManager().getGraph();
+        graph.getBuilder().addBinding(new BukkitBinding());
+        graph.commands()
+                .group("worldguard", "wg")
+                .describeAs("WorldGuard commands")
+                .registerMethods(new ToggleCommands(this))
+                .registerMethods(new GeneralCommands(this))
+                .registerMethods(new WorldGuardCommands(this))
+                .group("region", "regions", "rg")
+                .describeAs("Region commands")
+                .registerMethods(new RegionCommands(this))
+                .registerMethods(new MemberCommands(this))
+                .parent()
+                .parent();
 
         File cacheDir = new File(getDataFolder(), "cache");
         cacheDir.mkdirs();
@@ -196,7 +196,7 @@ public class WorldGuardPlugin extends JavaPlugin {
                         HttpRepositoryService.forMinecraft()),
                 profileCache);
 
-        PermissionsResolverManager.initialize(this);
+        // PermissionsResolverManager.initialize(this);
         configuration.load();
 
         log.info("Loading region data...");
@@ -233,7 +233,8 @@ public class WorldGuardPlugin extends JavaPlugin {
         configuration.updateCommandBookGodMode();
 
         if (getServer().getPluginManager().isPluginEnabled("CommandBook")) {
-            getServer().getPluginManager().registerEvents(new WorldGuardCommandBookListener(this), this);
+            log.log(Level.WARNING, "Removed CommandBook integration in this build.");
+            // getServer().getPluginManager().registerEvents(new WorldGuardCommandBookListener(this), this);
         }
 
         // handle worlds separately to initialize already loaded worlds
@@ -432,7 +433,8 @@ public class WorldGuardPlugin extends JavaPlugin {
      */
     public boolean inGroup(Player player, String group) {
         try {
-            return PermissionsResolverManager.getInstance().inGroup(player, group);
+            // return PermissionsResolverManager.getInstance().inGroup(player, group);
+            return false;
         } catch (Throwable t) {
             t.printStackTrace();
             return false;
@@ -447,7 +449,8 @@ public class WorldGuardPlugin extends JavaPlugin {
      */
     public String[] getGroups(Player player) {
         try {
-            return PermissionsResolverManager.getInstance().getGroups(player);
+            // return PermissionsResolverManager.getInstance().getGroups(player);
+            return new String[0];
         } catch (Throwable t) {
             t.printStackTrace();
             return new String[0];
@@ -507,7 +510,8 @@ public class WorldGuardPlugin extends JavaPlugin {
         // Invoke the permissions resolver
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            return PermissionsResolverManager.getInstance().hasPermission(player.getWorld().getName(), player, perm);
+            return sender.hasPermission(perm);
+            // return PermissionsResolverManager.getInstance().hasPermission(player.getWorld().getName(), player, perm);
         }
 
         return false;
@@ -824,17 +828,8 @@ public class WorldGuardPlugin extends JavaPlugin {
      * @return The WorldEditPlugin instance
      * @throws CommandException If there is no WorldEditPlugin available
      */
-    public WorldEditPlugin getWorldEdit() throws CommandException {
-        Plugin worldEdit = getServer().getPluginManager().getPlugin("WorldEdit");
-        if (worldEdit == null) {
-            throw new CommandException("WorldEdit does not appear to be installed.");
-        }
-
-        if (worldEdit instanceof WorldEditPlugin) {
-            return (WorldEditPlugin) worldEdit;
-        } else {
-            throw new CommandException("WorldEdit detection failed (report error).");
-        }
+    public WorldEdit getWorldEdit() throws CommandException {
+        return WorldEdit.getInstance();
     }
 
     /**

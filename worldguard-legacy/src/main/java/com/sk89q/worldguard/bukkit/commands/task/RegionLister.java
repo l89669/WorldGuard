@@ -20,7 +20,7 @@
 package com.sk89q.worldguard.bukkit.commands.task;
 
 import com.sk89q.minecraft.util.commands.CommandException;
-import com.sk89q.squirrelid.Profile;
+import com.sk89q.worldguard.util.profile.Profile;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.managers.RegionManager;

@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.Vector2D;
 import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.bukkit.util.BukkitHelper;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.RegionResultSet;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
@@ -453,7 +454,7 @@ public final class RegionManager {
      * @return an {@code ApplicableRegionSet}
      */
     public ApplicableRegionSet getApplicableRegions(org.bukkit.Location loc) {
-        return getApplicableRegions(com.sk89q.worldedit.bukkit.BukkitUtil.toVector(loc).floor());
+        return getApplicableRegions(BukkitHelper.toVector(loc).floor());
     }
 
 }

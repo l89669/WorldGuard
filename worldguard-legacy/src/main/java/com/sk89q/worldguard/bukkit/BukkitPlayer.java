@@ -19,12 +19,13 @@
 
 package com.sk89q.worldguard.bukkit;
 
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldguard.LocalPlayer;
-import org.bukkit.BanList.Type;
+import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldguard.LocalPlayer;
 
 import java.util.UUID;
 
@@ -83,7 +84,7 @@ public class BukkitPlayer extends LocalPlayer {
     @Override
     public void ban(String msg) {
         if (!silenced) {
-            Bukkit.getBanList(Type.NAME).addBan(player.getName(), null, null, null);
+            Bukkit.getBanList(BanList.Type.NAME).addBan(player.getName(), "WorldGuard - " + msg, null, null);
             player.kickPlayer(msg);
         }
     }

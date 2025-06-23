@@ -19,7 +19,6 @@
 
 package com.sk89q.worldguard.bukkit.listener;
 
-import com.sk89q.commandbook.InfoComponent;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
@@ -38,39 +37,39 @@ public class WorldGuardCommandBookListener implements Listener {
         this.plugin = plugin;
     }
     
-    @EventHandler
-    public void onPlayerWhois(InfoComponent.PlayerWhoisEvent event) {
-        if (event.getPlayer() instanceof Player) {
-            Player player = (Player) event.getPlayer();
-            LocalPlayer localPlayer = plugin.wrapPlayer(player);
-            if (plugin.getGlobalStateManager().get(player.getWorld()).useRegions) {
-                ApplicableRegionSet regions = plugin.getRegionContainer().createQuery().getApplicableRegions(player.getLocation());
-                
-                // Current regions
-                StringBuilder regionStr = new StringBuilder();
-                boolean first = true;
-                
-                for (ProtectedRegion region : regions) {
-                    if (!first) {
-                        regionStr.append(", ");
-                    }
-                    
-                    if (region.isOwner(localPlayer)) {
-                        regionStr.append("+");
-                    } else if (region.isMemberOnly(localPlayer)) {
-                        regionStr.append("-");
-                    }
-                    
-                    regionStr.append(region.getId());
-                    
-                    first = false;
-                }
-                
-                if (regions.size() > 0) {
-                    event.addWhoisInformation("Current Regions", regionStr);
-                }
-                event.addWhoisInformation("Can build", regions.canBuild(localPlayer));
-            }
-        }
-    }
+    // @EventHandler
+    // public void onPlayerWhois(InfoComponent.PlayerWhoisEvent event) {
+    //     if (event.getPlayer() instanceof Player) {
+    //         Player player = (Player) event.getPlayer();
+    //         LocalPlayer localPlayer = plugin.wrapPlayer(player);
+    //         if (plugin.getGlobalStateManager().get(player.getWorld()).useRegions) {
+    //             ApplicableRegionSet regions = plugin.getRegionContainer().createQuery().getApplicableRegions(player.getLocation());
+    //
+    //             // Current regions
+    //             StringBuilder regionStr = new StringBuilder();
+    //             boolean first = true;
+    //
+    //             for (ProtectedRegion region : regions) {
+    //                 if (!first) {
+    //                     regionStr.append(", ");
+    //                 }
+    //
+    //                 if (region.isOwner(localPlayer)) {
+    //                     regionStr.append("+");
+    //                 } else if (region.isMemberOnly(localPlayer)) {
+    //                     regionStr.append("-");
+    //                 }
+    //
+    //                 regionStr.append(region.getId());
+    //
+    //                 first = false;
+    //             }
+    //
+    //             if (regions.size() > 0) {
+    //                 event.addWhoisInformation("Current Regions", regionStr);
+    //             }
+    //             event.addWhoisInformation("Can build", regions.canBuild(localPlayer));
+    //         }
+    //     }
+    // }
 }

@@ -19,7 +19,7 @@
 
 package com.sk89q.worldguard.bukkit.commands.region;
 
-import com.sk89q.squirrelid.cache.ProfileCache;
+import com.sk89q.worldguard.util.profile.cache.ProfileCache;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.domains.DefaultDomain;
