@@ -22,7 +22,7 @@ package com.sk89q.worldguard.protection.flags;
 import com.sk89q.worldedit.LocalWorld;
 import com.sk89q.worldedit.Location;
 import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.bukkit.BukkitUtil;
+import com.sk89q.worldguard.bukkit.util.BukkitHelper;
 import org.bukkit.Bukkit;
 
 import javax.annotation.Nullable;
@@ -36,7 +36,7 @@ class LazyLocation extends Location {
 
     @Nullable
     private static LocalWorld findWorld(String worldName) {
-        return BukkitUtil.getLocalWorld(Bukkit.getServer().getWorld(worldName));
+        return BukkitHelper.getLocalWorld(Bukkit.getServer().getWorld(worldName));
     }
 
     public LazyLocation(String worldName, Vector position, float yaw, float pitch) {

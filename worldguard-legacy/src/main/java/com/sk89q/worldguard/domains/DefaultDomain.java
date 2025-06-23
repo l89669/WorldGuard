@@ -20,8 +20,8 @@
 package com.sk89q.worldguard.domains;
 
 import com.google.common.collect.ImmutableMap;
-import com.sk89q.squirrelid.Profile;
-import com.sk89q.squirrelid.cache.ProfileCache;
+import com.sk89q.worldguard.util.profile.Profile;
+import com.sk89q.worldguard.util.profile.cache.ProfileCache;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.util.ChangeTracked;
 

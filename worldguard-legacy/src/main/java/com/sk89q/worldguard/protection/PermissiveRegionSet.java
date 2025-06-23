@@ -93,7 +93,7 @@ public class PermissiveRegionSet extends AbstractRegionSet {
 
     @Override
     public Iterator<ProtectedRegion> iterator() {
-        return Iterators.emptyIterator();
+        return Collections.emptyIterator();
     }
 
     /**

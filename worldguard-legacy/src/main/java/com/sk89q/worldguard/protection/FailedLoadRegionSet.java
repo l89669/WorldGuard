@@ -102,7 +102,7 @@ public class FailedLoadRegionSet extends AbstractRegionSet {
 
     @Override
     public Iterator<ProtectedRegion> iterator() {
-        return Iterators.emptyIterator();
+        return Collections.emptyIterator();
     }
 
     /**

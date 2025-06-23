@@ -19,20 +19,26 @@
 
 package com.sk89q.worldguard.bukkit.commands.region;
 
+import cc.summermc.engine.server.BasicAPI;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.sk89q.minecraft.util.commands.CommandContext;
 import com.sk89q.minecraft.util.commands.CommandException;
 import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
-import com.sk89q.worldedit.bukkit.selections.Polygonal2DSelection;
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.forge.ForgeWorldEdit;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.Polygonal2DRegion;
+import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.regions.selector.CuboidRegionSelector;
+import com.sk89q.worldedit.regions.selector.Polygonal2DRegionSelector;
 import com.sk89q.worldguard.bukkit.RegionContainer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.bukkit.permission.RegionPermissionModel;
+import com.sk89q.worldguard.bukkit.util.BukkitHelper;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.FlagContext;
@@ -42,11 +48,14 @@ import com.sk89q.worldguard.protection.regions.GlobalProtectedRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.session.SessionManager;
+import lombok.val;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
 import java.util.Set;
 
 class RegionCommandsBase {
@@ -212,18 +221,27 @@ class RegionCommandsBase {
      * @return the selection
      * @throws CommandException thrown on an error
      */
-    protected static Selection checkSelection(Player player) throws CommandException {
-        WorldEditPlugin worldEdit = WorldGuardPlugin.inst().getWorldEdit();
-        Selection selection = worldEdit.getSelection(player);
+    protected static Region checkSelection(Player player) throws CommandException {
+        val pmp = BasicAPI.transform(player);
+        val fp = ForgeWorldEdit.inst.wrap(pmp);
+        val session = WorldEdit.getInstance().getSession(fp);
+        try {
+            val selection = session != null ? session.getSelection(ForgeWorldEdit.inst.getWorld(pmp.world)) : null;
 
-        if (selection == null) {
+            if (selection == null) {
+                throw new CommandException(
+                        "Please select an area first. " +
+                                "Use WorldEdit to make a selection! " +
+                                "(wiki: http://wiki.sk89q.com/wiki/WorldEdit).");
+            }
+
+            return selection;
+        } catch (IncompleteRegionException e) {
             throw new CommandException(
                     "Please select an area first. " +
                             "Use WorldEdit to make a selection! " +
                             "(wiki: http://wiki.sk89q.com/wiki/WorldEdit).");
         }
-
-        return selection;
     }
 
     /**
@@ -271,17 +289,17 @@ class RegionCommandsBase {
      * @throws CommandException thrown on an error
      */
     protected static ProtectedRegion checkRegionFromSelection(Player player, String id) throws CommandException {
-        Selection selection = checkSelection(player);
+        Region selection = checkSelection(player);
 
         // Detect the type of region from WorldEdit
-        if (selection instanceof Polygonal2DSelection) {
-            Polygonal2DSelection polySel = (Polygonal2DSelection) selection;
-            int minY = polySel.getNativeMinimumPoint().getBlockY();
-            int maxY = polySel.getNativeMaximumPoint().getBlockY();
-            return new ProtectedPolygonalRegion(id, polySel.getNativePoints(), minY, maxY);
-        } else if (selection instanceof CuboidSelection) {
-            BlockVector min = selection.getNativeMinimumPoint().toBlockVector();
-            BlockVector max = selection.getNativeMaximumPoint().toBlockVector();
+        if (selection instanceof Polygonal2DRegion) {
+            Polygonal2DRegion polySel = (Polygonal2DRegion) selection;
+            int minY = polySel.getMinimumPoint().getBlockY();
+            int maxY = polySel.getMaximumPoint().getBlockY();
+            return new ProtectedPolygonalRegion(id, Collections.unmodifiableList(polySel.getPoints()), minY, maxY);
+        } else if (selection instanceof CuboidRegion) {
+            BlockVector min = selection.getMinimumPoint().toBlockVector();
+            BlockVector max = selection.getMaximumPoint().toBlockVector();
             return new ProtectedCuboidRegion(id, min, max);
         } else {
             throw new CommandException("Sorry, you can only use cuboids and polygons for WorldGuard regions.");
@@ -349,26 +367,25 @@ class RegionCommandsBase {
      * @throws CommandException thrown on a command error
      */
     protected static void setPlayerSelection(Player player, ProtectedRegion region) throws CommandException {
-        WorldEditPlugin worldEdit = WorldGuardPlugin.inst().getWorldEdit();
-
-        World world = player.getWorld();
+        val fp = ForgeWorldEdit.inst.wrap(BasicAPI.transform(player));
+        val fw = fp.getWorld();
 
         // Set selection
         if (region instanceof ProtectedCuboidRegion) {
             ProtectedCuboidRegion cuboid = (ProtectedCuboidRegion) region;
             Vector pt1 = cuboid.getMinimumPoint();
             Vector pt2 = cuboid.getMaximumPoint();
-            CuboidSelection selection = new CuboidSelection(world, pt1, pt2);
-            worldEdit.setSelection(player, selection);
+            CuboidRegionSelector selection = new CuboidRegionSelector(fw, pt1, pt2);
+            BukkitHelper.setSelection(fp, selection);
             player.sendMessage(ChatColor.YELLOW + "Region selected as a cuboid.");
 
         } else if (region instanceof ProtectedPolygonalRegion) {
             ProtectedPolygonalRegion poly2d = (ProtectedPolygonalRegion) region;
-            Polygonal2DSelection selection = new Polygonal2DSelection(
-                    world, poly2d.getPoints(),
+            Polygonal2DRegionSelector selection = new Polygonal2DRegionSelector(
+                    fw, poly2d.getPoints(),
                     poly2d.getMinimumPoint().getBlockY(),
                     poly2d.getMaximumPoint().getBlockY() );
-            worldEdit.setSelection(player, selection);
+            BukkitHelper.setSelection(fp, selection);
             player.sendMessage(ChatColor.YELLOW + "Region selected as a polygon.");
 
         } else if (region instanceof GlobalProtectedRegion) {

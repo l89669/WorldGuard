@@ -19,6 +19,8 @@
 
 package com.sk89q.worldguard.bukkit;
 
+import org.bukkit.BanList;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -82,7 +84,7 @@ public class BukkitPlayer extends LocalPlayer {
     @Override
     public void ban(String msg) {
         if (!silenced) {
-            player.setBanned(true);
+            Bukkit.getBanList(BanList.Type.NAME).addBan(player.getName(), "WorldGuard - " + msg, null, null);
             player.kickPlayer(msg);
         }
     }

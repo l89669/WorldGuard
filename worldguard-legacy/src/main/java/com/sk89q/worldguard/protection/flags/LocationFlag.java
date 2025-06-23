@@ -21,9 +21,9 @@ package com.sk89q.worldguard.protection.flags;
 
 import com.sk89q.worldedit.Location;
 import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.bukkit.permission.RegionPermissionModel;
+import com.sk89q.worldguard.bukkit.util.BukkitHelper;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -92,7 +92,7 @@ public class LocationFlag extends Flag<Location> {
     }
 
     private Location toLazyLocation(org.bukkit.Location location) {
-        return new LazyLocation(location.getWorld().getName(), BukkitUtil.toVector(location), location.getYaw(), location.getPitch());
+        return new LazyLocation(location.getWorld().getName(), BukkitHelper.toVector(location), location.getYaw(), location.getPitch());
     }
 
     @Override
